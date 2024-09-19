@@ -45,7 +45,7 @@ def run(rank, n_gpus, args):
     torch.manual_seed(1234)
     torch.cuda.set_device(rank)
 
-    dset = DLoader(args.input_dir)
+    dset = DLoader(args.input_dir, args.type)
     d_sampler = torch.utils.data.distributed.DistributedSampler(
         dset,
         num_replicas=n_gpus,
@@ -58,13 +58,14 @@ def run(rank, n_gpus, args):
                           drop_last=False, collate_fn=collate_fn, sampler=d_sampler)
 
     for epoch in range(1):
-        extract(d_loader, args.output_dir, rank)
+        extract(d_loader, args.output_dir, rank, audio_type=args.type)
 
 
 class DLoader():
-    def __init__(self, input_dir):
+    def __init__(self, input_dir, type='wav'):
+        self.audio_filetype = type
         self.wavs = []
-        self.wavs += sorted(glob.glob(os.path.join(input_dir, '**/*.wav'), recursive=True))
+        self.wavs += sorted(glob.glob(os.path.join(input_dir, f'**/*.{self.audio_filetype}'), recursive=True))
         print('wav num: ', len(self.wavs))
 
     def __getitem__(self, index):
@@ -80,12 +81,12 @@ class Collate():
     def __call__(self, batch):
         return batch[0]
 
-def extract(d_loader, output_dir, rank, resample_rate=16000):
+def extract(d_loader, output_dir, rank, resample_rate=16000, audio_type='wav'):
     with torch.no_grad():
         pbar = tqdm(d_loader)
         for _, audio_path in enumerate(pbar):
             pbar.set_description(os.path.basename(audio_path))
-            f0_filename = os.path.join(output_dir, os.path.basename(audio_path).replace(".wav", ".pt"))
+            f0_filename = os.path.join(output_dir, os.path.basename(audio_path).replace(f".{audio_type}", ".pt"))
 
             if not os.path.isfile(f0_filename):
                 os.makedirs(os.path.dirname(f0_filename), exist_ok=True)
@@ -109,7 +110,8 @@ def extract(d_loader, output_dir, rank, resample_rate=16000):
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input_dir', default='/data/haoyu/data/LibriTTS/extract')
-    parser.add_argument('-o', '--output_dir', default='/data/haoyu/data/LibriTTS/LibriTTS_16k_f0')
+    parser.add_argument('-i', '--input_dir', default='/data/wangweikang22/data/LibriTTS/extract/LibriSpeech-test-clean')
+    parser.add_argument('-o', '--output_dir', default='/data/wangweikang22/data/LibriTTS/LibriSpeech-test-clean-f0-2')
+    parser.add_argument('-t', '--audio_type', default='flac')
     a = parser.parse_args()
     main(a)

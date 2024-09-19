@@ -19,7 +19,7 @@ from augmentation.aug import Augment
 from model_f0_vqvae import Quantizer
 from model.vc_dddm_mixup import Wav2vec2, DDDM
 from data_loader import AudioDataset, MelSpectrogramFixed
-from hifigan.vocoder import HiFi
+from vocoder.hifigan import HiFi
 from torch.utils.data import DataLoader
 
 torch.backends.cudnn.benchmark = True
@@ -67,8 +67,9 @@ def run(rank, n_gpus, hps):
 
     train_dataset = AudioDataset(hps, training=True)
     train_sampler = DistributedSampler(train_dataset) if n_gpus > 1 else None
+    mini_batch_size = hps.train.batch_size // n_gpus
     train_loader = DataLoader(
-        train_dataset, batch_size=hps.train.batch_size, num_workers=32,
+        train_dataset, batch_size=mini_batch_size, num_workers=8,
         sampler=train_sampler, drop_last=True, persistent_workers=True, pin_memory=True
     )
 
@@ -80,7 +81,7 @@ def run(rank, n_gpus, hps):
             hps.data.n_mel_channels,
             hps.train.segment_size // hps.data.hop_length,
             **hps.model).cuda()
-        path_ckpt = './hifigan/G_2930000.pth'
+        path_ckpt = './ckpt/voc_ckpt.pth'
 
         utils.load_checkpoint(path_ckpt, net_v, None)
         net_v.eval()
@@ -95,7 +96,7 @@ def run(rank, n_gpus, hps):
                    hps.diffusion.dec_dim, hps.diffusion.beta_min, hps.diffusion.beta_max, hps).cuda()
 
     f0_quantizer = Quantizer(hps).cuda(rank)
-    utils.load_checkpoint('./f0_vqvae/f0_vqvae.pth', f0_quantizer)
+    utils.load_checkpoint('./ckpt/f0_vqvae.pth', f0_quantizer)
     f0_quantizer.eval() 
      
     if rank == 0:

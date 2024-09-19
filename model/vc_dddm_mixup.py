@@ -20,7 +20,7 @@ from commons import init_weights, get_padding
 class Wav2vec2(torch.nn.Module):
     def __init__(self, layer=12): 
         super().__init__() 
-        self.wav2vec2 = transformers.Wav2Vec2ForPreTraining.from_pretrained("facebook/wav2vec2-xls-r-300m")
+        self.wav2vec2 = transformers.Wav2Vec2ForPreTraining.from_pretrained("/data/wangweikang22/hf/facebook/wav2vec2-xls-r-300m")
         for param in self.wav2vec2.parameters():
             param.requires_grad = False
             param.grad = None
@@ -227,11 +227,12 @@ class DDDM(BaseModule):
 
         return y[:, :, :max_length]
     
-    def compute_loss(self, x, w2v_x, f0_x, x_length): 
+    def compute_loss(self, x, w2v_x, f0_x, x_length, mixup_ratio=0.5):
         x_mask = sequence_mask(x_length, x.size(2)).unsqueeze(1).to(x.dtype)
         spk, src_out, ftr_out = self.encoder(w2v_x, f0_x, x, x_length, mixup=True)
 
-        mixup = torch.randint(0, 2, (x.size(0),1,1)).to(x.device)
+        # mixup = torch.randint(0, 2, (x.size(0),1,1)).to(x.device)
+        mixup = torch.bernoulli(torch.full((x.size(0), 1, 1), mixup_ratio)).to(x.device)
 
         src_out_new = mixup*src_out[:x.size(0), :, :] + (1-mixup)*src_out[x.size(0):, :, :]
         ftr_out_new = mixup*ftr_out[:x.size(0), :, :] + (1-mixup)*ftr_out[x.size(0):, :, :]
