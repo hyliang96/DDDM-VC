@@ -1,0 +1,90 @@
+
+train-clean-100+train-clean-360:
+
+ 18:07:06  DDDM-VC  base  haoyu@jungpu32  /data/haoyu/project/DDDM-VC  master !5 ?7
+❯ python ./preprocess/extract_f0.py
+
+输出原文：
+wav num:  149736
+1040_133433_000104_000000.wav:   0%|           | 188/149736 [02:04<58:46:52,  1.42s/it]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:541: UserWarning: kernel_size exceeds volume extent: the volume will be zero-padded.
+  voiced_peak_minmrt = medfilt(voiced_peak_minmrt,
+/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:557: UserWarning: kernel_size exceeds volume extent: the volume will be zero-padded.
+  voiced_pitch = medfilt(voiced_pitch, max(1, parameters['median_value']-2))
+1116_132851_000036_000000.wav:   1%|           | 936/149736 [20:40<71:55:09,  1.74s/it]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:970: RuntimeWarning: invalid value encountered in divide
+  phi[lag_min:lag_max] = formula_nume/np.sqrt(formula_denom)
+205_159056_000012_000001.wav:  33%|██▎    | 49985/149736 [21:34:14<21:48:03,205_159056_000012_000001.wav:  33%|██▎    | 49986/149736 [21:34:21<81:01:35,205_159056_000013_000000.wav:  33%|██▎    | 49986/149736 [21:34:21<81:01:35,205_159056_000013_000000.wav:  33%|██▎    | 49987/149736 [21:34:22<58:58:56,205_159056_000014_000000.wav:  33%|██▎    | 49987/149736 [21:34:22<58:58:56,205_159056_000014_000000.wav:  33%|██▎    | 49988/149736 [21:34:23<48:48:59,205_159056_000018_000000.wav:  33%|██▎    | 49988/149736 [21:34:23<48:48:59,205_159056_000018_000000.wav:  33%|██▎    | 49989/149736 [21:34:24<45:52:15,205_159056_000019_000000.wav:  33%|██▎    | 49989/149736 [21:34:24<45:52:15,205_159056_000019_000000.wav:  33%|██▎    | 49990/149736 [21:34:25<36:59:40,205_159056_000019_000002.wav:  33%|██▎   205_159056_000019_000004.wav:  33%|██▎    | 4205_159056_000020_000003.wav:  33%|██▎    | 49994/149736 [21:34:32205_159056_000028_000002.wav:  33%|██▎    | 50029/149736 [21:35:46<90:55:36,  3.28s/it]:01:04,  2.64s/it]
+986_129388_000067_000000.wav: 100%|█████████| 149736/149736 [66:45:36<00:00,  1.61s/it]
+
+格式整理：
+wav num:  149736
+1040_133433_000104_000000.wav:   0%|           | 188/149736 [02:04<58:46:52,  1.42s/it]
+/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:541: UserWarning: kernel_size exceeds volume extent: the volume will be zero-padded.
+  voiced_peak_minmrt = medfilt(voiced_peak_minmrt,
+/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:557: UserWarning: kernel_size exceeds volume extent: the volume will be zero-padded.
+  voiced_pitch = medfilt(voiced_pitch, max(1, parameters['median_value']-2))
+
+1116_132851_000036_000000.wav:   1%|           | 936/149736 [20:40<71:55:09,  1.74s/it]
+/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:970: RuntimeWarning: invalid value encountered in divide
+  phi[lag_min:lag_max] = formula_nume/np.sqrt(formula_denom)
+
+986_129388_000067_000000.wav: 100%|█████████| 149736/149736 [66:45:36<00:00,  1.61s/it]
+
+
+
+❯ python ./preprocess/extract_f0.py
+wav num:  149736
+1040_133433_000104_000000.wav:   0%|                                                                                 | 1/149736 [00:12<517:15:39, 12.44s/it]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:541: UserWarning: kernel_size exceeds volume extent: the volume will be zero-padded.
+  voiced_peak_minmrt = medfilt(voiced_peak_minmrt,
+/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:557: UserWarning: kernel_size exceeds volume extent: the volume will be zero-padded.
+  voiced_pitch = medfilt(voiced_pitch, max(1, parameters['median_value']-2))
+1116_132851_000036_000000.wav:   0%|▎                                                                                  | 670/149736 [00:12<25:34, 97.14it/s]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:970: RuntimeWarning: invalid value encountered in divide
+  phi[lag_min:lag_max] = formula_nume/np.sqrt(formula_denom)
+1116_132851_000036_000000.wav: 100%|██████████████████████████████████████████████████████████████████████████████| 149736/149736 [00:43<00:00, 3436.26it/s]
+
+
+暂未从/data/haoyu/data/LibriTTS/LibriTTS_16k_f0将1040_133433_000104_000000.pt,1116_132851_000036_000000.pt去除
+
+
+
+
+
+
+-----------------------
+dev-clean:
+
+python ./preprocess/extract_f0.py
+wav num:  5736
+3000_15664_000004_000001.wav:  44%|████████████████████████████████████▉                                               | 2523/5736 [1:21:35<4:09:57,  4.67s/it]
+84_121550_000010_000000.wav:  96%|███████████████████████████████████████████████████████████████████████████████████▊   | 5525/5736 [3:11:23<04:51,  1.38s/it]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:970: RuntimeWarning: invalid value encountered in divide
+  phi[lag_min:lag_max] = formula_nume/np.sqrt(formula_denom)
+8842_304647_000051_000000.wav: 100%|█████████████████████████████████████████████████████████████████████████████████████| 5736/5736 [3:18:00<00:00,  2.07s/it]
+
+-----------------------
+dev-other:
+
+python ./preprocess/extract_f0.py
+wav num:  4613
+3660_172182_000015_000000.wav:  28%|████████▊                      | 1309/4613 [35:48<3:05:29,  3.37s/it]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:970: RuntimeWarning: invalid value encountered in divide
+  phi[lag_min:lag_max] = formula_nume/np.sqrt(formula_denom)
+8288_274162_000094_000000.wav: 100%|███████████████████████████████| 4613/4613 [2:09:56<00:00,  1.69s/it]
+
+-----------------------
+test-clean:
+
+python ./preprocess/extract_f0.py
+wav num:  4837
+121_121726_000025_000001.wav:   5%|█▋                               | 246/4837 [10:12<1:34:29,  1.23s/it]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:970: RuntimeWarning: invalid value encountered in divide
+  phi[lag_min:lag_max] = formula_nume/np.sqrt(formula_denom)
+908_31957_000025_000001.wav: 100%|█████████████████████████████████| 4837/4837 [3:05:45<00:00,  2.30s/it]
+
+
+-----------------------
+test-other:
+
+python ./preprocess/extract_f0.py
+wav num:  5120
+8131_117016_000051_000000.wav:  88%|███████████████████████████▎   | 4507/5120 [1:56:58<06:05,  1.68it/s]/data/haoyu/project/DDDM-VC/venv/lib/python3.10/site-packages/amfm_decompy/pYAAPT.py:970: RuntimeWarning: invalid value encountered in divide
+  phi[lag_min:lag_max] = formula_nume/np.sqrt(formula_denom)
+8461_281231_000052_000000.wav: 100%|███████████████████████████████| 5120/5120 [2:11:53<00:00,  1.55s/it]
+
+-----------------------

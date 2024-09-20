@@ -19,7 +19,7 @@ from augmentation.aug import Augment
 from model_f0_vqvae import Quantizer
 from model.vc_dddm_mixup import Wav2vec2, DDDM
 from data_loader import AudioDataset, MelSpectrogramFixed
-from hifigan.vocoder import HiFi
+from vocoder.hifigan import HiFi
 from torch.utils.data import DataLoader
 
 torch.backends.cudnn.benchmark = True
@@ -80,14 +80,14 @@ def run(rank, n_gpus, hps):
             hps.data.n_mel_channels,
             hps.train.segment_size // hps.data.hop_length,
             **hps.model).cuda()
-        path_ckpt = './hifigan/G_2930000.pth'
+        path_ckpt = './ckpt/voc_ckpt.pth'
 
         utils.load_checkpoint(path_ckpt, net_v, None)
         net_v.eval()
         net_v.dec.remove_weight_norm()
     else:
         net_v = None
-        
+
     w2v = Wav2vec2().cuda(rank)
     aug = Augment(hps).cuda(rank)
 
@@ -95,9 +95,9 @@ def run(rank, n_gpus, hps):
                    hps.diffusion.dec_dim, hps.diffusion.beta_min, hps.diffusion.beta_max, hps).cuda()
 
     f0_quantizer = Quantizer(hps).cuda(rank)
-    utils.load_checkpoint('./f0_vqvae/f0_vqvae.pth', f0_quantizer)
-    f0_quantizer.eval() 
-     
+    utils.load_checkpoint('./ckpt/f0_vqvae.pth', f0_quantizer)
+    f0_quantizer.eval()
+
     if rank == 0:
         num_param = get_param_num(model.encoder)
         print('[Encoder] number of Parameters:', num_param)
@@ -113,7 +113,7 @@ def run(rank, n_gpus, hps):
     model = DDP(model, device_ids=[rank])
 
     try:
-        _, _, _, epoch_str = utils.load_checkpoint(utils.latest_checkpoint_path(hps.model_dir, "G_*.pth"), model, optimizer) 
+        _, _, _, epoch_str = utils.load_checkpoint(utils.latest_checkpoint_path(hps.model_dir, "G_*.pth"), model, optimizer)
         global_step = (epoch_str - 1) * len(train_loader)
     except:
         epoch_str = 1
@@ -143,7 +143,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
     global global_step
     if n_gpus > 1:
         train_loader.sampler.set_epoch(epoch)
-    
+
     model.train()
     for batch_idx, (x, x_f0, length) in enumerate(train_loader):
         x = x.cuda(rank, non_blocking=True)
@@ -155,7 +155,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
         nan_x = torch.isnan(aug_x).any()
         x = x if nan_x else aug_x
         x_pad = F.pad(x, (40, 40), "reflect")
-        
+
         w2v_x = w2v(x_pad)
         f0_x = f0_quantizer.code_extraction(x_f0)
 

@@ -84,6 +84,9 @@ def extract(d_loader, output_dir, rank, resample_rate=16000):
     with torch.no_grad():
         pbar = tqdm(d_loader)
         for _, audio_path in enumerate(pbar):
+            # if os.path.basename(audio_path) != '1040_133433_000104_000000.wav' and \
+               # os.path.basename(audio_path) != '1116_132851_000036_000000.wav':
+                # continue
             pbar.set_description(os.path.basename(audio_path))
             f0_filename = os.path.join(output_dir, os.path.basename(audio_path).replace(".wav", ".pt"))
 
@@ -93,6 +96,8 @@ def extract(d_loader, output_dir, rank, resample_rate=16000):
                 audio, sample_rate = torchaudio.load(audio_path)
                 resampler = T.Resample(sample_rate, resample_rate, dtype=audio.dtype)
                 audio = resampler(audio)
+
+                # torchaudio.save('/data/haoyu/data/LibriTTS/LibriTTS_16k/'+os.path.basename(audio_path), audio, resample_rate)
 
                 p = (audio.shape[-1] // 1280 + 1) * 1280 - audio.shape[-1]
                 audio = torch.nn.functional.pad(audio, (0, p), mode='constant').data
@@ -109,7 +114,7 @@ def extract(d_loader, output_dir, rank, resample_rate=16000):
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input_dir', default='/data/haoyu/data/LibriTTS/extract')
-    parser.add_argument('-o', '--output_dir', default='/data/haoyu/data/LibriTTS/LibriTTS_16k_f0')
+    parser.add_argument('-i', '--input_dir', default='/data/haoyu/data/LibriTTS/extract/LibriTTS-test-clean')
+    parser.add_argument('-o', '--output_dir', default='/data/haoyu/data/LibriTTS/LibriTTS_test-clean_16k_f0')
     a = parser.parse_args()
     main(a)
