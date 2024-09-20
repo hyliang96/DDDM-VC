@@ -35,27 +35,27 @@ class AudioDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         audio_path = self.audio_paths[index]
         f0_norm_path = self.f0_norm_paths[index]
-      
+
         audio, sample_rate = self.load_audio_to_torch(audio_path)
         f0_norm = torch.load(f0_norm_path)
 
-        if sample_rate != self.sample_rate:
-            resampler = Resample(sample_rate, self.sample_rate, dtype=audio.dtype)
-            audio = resampler(audio)
-            sample_rate = self.sample_rate
+        # if sample_rate != self.sample_rate:
+            # resampler = Resample(sample_rate, self.sample_rate, dtype=audio.dtype)
+            # audio = resampler(audio)
+            # sample_rate = self.sample_rate
 
         assert sample_rate == self.sample_rate, \
             f"""Got path to audio of sampling rate {sample_rate}, \
                 but required {self.sample_rate} according config."""
 
-        if not self.training:  
+        if not self.training:
             return audio, f0_norm
 
         if audio.shape[-1] > self.segment_length:
             max_f0_start = f0_norm.shape[-1] - self.segment_length//80
-            
+
             f0_start = np.random.randint(0, max_f0_start)
-            f0_segment = f0_norm[:, f0_start:f0_start + self.segment_length//80]    
+            f0_segment = f0_norm[:, f0_start:f0_start + self.segment_length//80]
             audio_start = f0_start*80
             segment = audio[audio_start:audio_start + self.segment_length]
             if segment.shape[-1] < self.segment_length:
