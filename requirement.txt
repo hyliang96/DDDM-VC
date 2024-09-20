@@ -1,4 +1,5 @@
 #  python==3.10.4
+pip==19.2
 einops==0.6.0
 huggingface-hub==0.24.6
 librosa==0.8.1
@@ -7,6 +8,8 @@ SoundFile==0.10.3.post1
 torch==1.11.0
 torchaudio==0.11.0
 tensorboard==2.17.1
-
 numpy==1.23.5
 transformers==4.44.2
+
+# pretty-errors
+# pynvim
