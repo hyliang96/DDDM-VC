@@ -69,7 +69,7 @@ def run(rank, n_gpus, hps):
     train_sampler = DistributedSampler(train_dataset) if n_gpus > 1 else None
     mini_batch_size = hps.train.batch_size // n_gpus
     train_loader = DataLoader(
-        train_dataset, batch_size=mini_batch_size, num_workers=32,
+        train_dataset, batch_size=mini_batch_size, num_workers=8,
         sampler=train_sampler, drop_last=True, persistent_workers=True, pin_memory=True
     )
 
