@@ -20,7 +20,7 @@ from commons import init_weights, get_padding
 class Wav2vec2(torch.nn.Module):
     def __init__(self, layer=12):
         super().__init__()
-        self.wav2vec2 = transformers.Wav2Vec2ForPreTraining.from_pretrained("facebook/wav2vec2-xls-r-300m")
+        self.wav2vec2 = transformers.Wav2Vec2ForPreTraining.from_pretrained("./hf/facebook/wav2vec2-xls-r-300m")
         for param in self.wav2vec2.parameters():
             param.requires_grad = False
             param.grad = None

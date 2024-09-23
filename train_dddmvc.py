@@ -116,6 +116,7 @@ def run(rank, n_gpus, hps):
     try:
         _, _, _, epoch_str = utils.load_checkpoint(utils.latest_checkpoint_path(hps.model_dir, "G_*.pth"), model, optimizer)
         global_step = (epoch_str - 1) * len(train_loader)
+        print(f"Using checkpoint, epoch {epoch_str}")
     except:
         epoch_str = 1
         global_step = 0
