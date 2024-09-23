@@ -110,12 +110,19 @@ def inference(a):
     trg_length = torch.LongTensor([trg_mel.size(-1)]).to(device)   
 
     with torch.no_grad(): 
-        c = model.vc(src_mel, w2v_x, f0_code, src_length, trg_mel, trg_length, n_timesteps=a.time_step, mode='ml')
-        converted_audio = net_v(c)  
+        c, *traj = model.vc(src_mel, w2v_x, f0_code, src_length, trg_mel, trg_length, n_timesteps=a.time_step, mode='ml', require_traj=a.traj)
+        converted_audio = net_v(c)
+        if len(traj) > 0:
+            traj = traj[0]
+            print(traj.shape)
+            sample_steps = [t for t in range(0, a.time_step + 1, a.time_step // 5)]
+            for i, t in enumerate(sample_steps):
+                out = os.path.join(a.output_dir, f'{src_name}_to_{trg_name}_t={t}.wav')
+                save_audio(net_v(traj[:, t, ...]), out)
         
     f_name = f'{src_name}_to_{trg_name}.wav' 
     out = os.path.join(a.output_dir, f_name)
-    save_audio(converted_audio, out)   
+    save_audio(converted_audio, out)
     print(">> Done.")
      
 
@@ -130,6 +137,7 @@ def main():
     parser.add_argument('--ckpt_f0_vqvae', '-f', type=str, default='./f0_vqvae/G_720000.pth')
     parser.add_argument('--output_dir', '-o', type=str, default='./converted')  
     parser.add_argument('--time_step', '-t', type=int, default=6)
+    parser.add_argument('--traj', action='store_true', help='save trajectory')
     
     global hps, device, a
     

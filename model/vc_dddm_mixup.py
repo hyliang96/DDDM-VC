@@ -194,7 +194,7 @@ class DDDM(BaseModule):
         
         return enc_out, src_out, ftr_out, y[:, :, :max_length]
     
-    def vc(self, x, w2v_x, f0_x, x_lengths, y, y_lengths, n_timesteps, mode='ml'): 
+    def vc(self, x, w2v_x, f0_x, x_lengths, y, y_lengths, n_timesteps, mode='ml', require_traj=False):
         x_mask = sequence_mask(x_lengths, x.size(2)).unsqueeze(1).to(x.dtype)
 
         out_enc, spk, src_out, ftr_out = self.encoder.voice_conversion(w2v_x, x_lengths, f0_x, y, y_lengths)
@@ -222,10 +222,15 @@ class DDDM(BaseModule):
         z_src += start_n
         z_ftr += start_n
 
-        y_src, y_ftr = self.decoder(z_src, z_ftr, x_mask_new, src_new, ftr_new, spk, n_timesteps, mode)
+        res = self.decoder(z_src, z_ftr, x_mask_new, src_new, ftr_new, spk, n_timesteps, mode, require_traj=require_traj)
+        if require_traj:
+            y_src, y_ftr, src_traj, ftr_traj = res
+            y_traj = (src_traj + ftr_traj)/2
+        else:
+            y_src, y_ftr = res
         y = (y_src + y_ftr)/2
 
-        return y[:, :, :max_length]
+        return y[:, :, :max_length] if not require_traj else y[:, :, :max_length], y_traj[:, :, :max_length]
     
     def compute_loss(self, x, w2v_x, f0_x, x_length, mixup_ratio=0.5):
         x_mask = sequence_mask(x_length, x.size(2)).unsqueeze(1).to(x.dtype)
