@@ -230,7 +230,7 @@ class DDDM(BaseModule):
             y_src, y_ftr = res
         y = (y_src + y_ftr)/2
 
-        return y[:, :, :max_length] if not require_traj else y[:, :, :max_length], y_traj[:, :, :max_length]
+        return y[:, :, :max_length] if not require_traj else (y[:, :, :max_length], y_traj[:, :, :max_length], src_traj[:, :, :max_length], ftr_traj[:, :, :max_length])
     
     def compute_loss(self, x, w2v_x, f0_x, x_length, mixup_ratio=0.5):
         x_mask = sequence_mask(x_length, x.size(2)).unsqueeze(1).to(x.dtype)

@@ -88,7 +88,7 @@ def run(rank, n_gpus, hps):
         net_v.dec.remove_weight_norm()
     else:
         net_v = None
-        
+
     w2v = Wav2vec2().cuda(rank)
     aug = Augment(hps).cuda(rank)
 
@@ -97,8 +97,8 @@ def run(rank, n_gpus, hps):
 
     f0_quantizer = Quantizer(hps).cuda(rank)
     utils.load_checkpoint('./ckpt/f0_vqvae.pth', f0_quantizer)
-    f0_quantizer.eval() 
-     
+    f0_quantizer.eval()
+
     if rank == 0:
         num_param = get_param_num(model.encoder)
         print('[Encoder] number of Parameters:', num_param)
@@ -114,7 +114,7 @@ def run(rank, n_gpus, hps):
     model = DDP(model, device_ids=[rank])
 
     try:
-        _, _, _, epoch_str = utils.load_checkpoint(utils.latest_checkpoint_path(hps.model_dir, "G_*.pth"), model, optimizer) 
+        _, _, _, epoch_str = utils.load_checkpoint(utils.latest_checkpoint_path(hps.model_dir, "G_*.pth"), model, optimizer)
         global_step = (epoch_str - 1) * len(train_loader)
         print(f"Using checkpoint, epoch {epoch_str}")
     except:
@@ -145,7 +145,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
     global global_step
     if n_gpus > 1:
         train_loader.sampler.set_epoch(epoch)
-    
+
     model.train()
     for batch_idx, (x, x_f0, length) in enumerate(train_loader):
         x = x.cuda(rank, non_blocking=True)
@@ -157,7 +157,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
         nan_x = torch.isnan(aug_x).any()
         x = x if nan_x else aug_x
         x_pad = F.pad(x, (40, 40), "reflect")
-        
+
         w2v_x = w2v(x_pad)
         f0_x = f0_quantizer.code_extraction(x_f0)
 
