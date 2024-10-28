@@ -1,5 +1,5 @@
 import math
-import torch 
+import torch
 import numpy as np
 from torch.nn import functional as F
 
@@ -24,7 +24,7 @@ class GradLogPEstimator(BaseModule):
         self.downs = torch.nn.ModuleList([])
         self.ups = torch.nn.ModuleList([])
 
-        num_resolutions = len(in_out) 
+        num_resolutions = len(in_out)
 
         for ind, (dim_in, dim_out) in enumerate(in_out):
             is_last = ind >= (num_resolutions - 1)
@@ -34,7 +34,7 @@ class GradLogPEstimator(BaseModule):
                 Residual(Rezero(LinearAttention(dim_out))),
                 Downsample(dim_out) if not is_last else torch.nn.Identity()]))
 
-        mid_dim = dims[-1]  
+        mid_dim = dims[-1]
 
         self.mid_block1 = ResnetBlock(mid_dim, mid_dim, time_emb_dim=dim_base)
         self.mid_attn = Residual(Rezero(LinearAttention(mid_dim)))
@@ -50,16 +50,16 @@ class GradLogPEstimator(BaseModule):
         self.final_conv = torch.nn.Conv2d(dim_base, 1, 1)
 
     def forward(self, x, x_mask, enc_out, spk, t):
-        condition = self.time_pos_emb(t) 
-        t = self.mlp(condition) 
+        condition = self.time_pos_emb(t)
+        t = self.mlp(condition)
 
         x = torch.stack([enc_out, x], 1)
         x_mask = x_mask.unsqueeze(1)
 
-        condition = torch.cat([condition, spk.squeeze(2)], 1) 
-        condition = self.cond_block(condition).unsqueeze(-1).unsqueeze(-1)  
+        condition = torch.cat([condition, spk.squeeze(2)], 1)
+        condition = self.cond_block(condition).unsqueeze(-1).unsqueeze(-1)
 
-        condition = torch.cat(x.shape[2] * [condition], 2)  
+        condition = torch.cat(x.shape[2] * [condition], 2)
         condition = torch.cat(x.shape[3] * [condition], 3)
         x = torch.cat([x, condition], 1)
 
@@ -138,7 +138,7 @@ class Diffusion(BaseModule):
 
     def compute_diffused_mean(self, x0, mask, src_out, ftr_out, t, use_torch=False):
 
-        x0_weight = self.get_gamma(0, t, use_torch=use_torch)  
+        x0_weight = self.get_gamma(0, t, use_torch=use_torch)
         mean_weight = 1.0 - x0_weight
         xt_src = x0 * x0_weight + src_out * mean_weight
         xt_ftr = x0 * x0_weight + ftr_out * mean_weight
@@ -155,10 +155,15 @@ class Diffusion(BaseModule):
 
     @torch.no_grad()
     def reverse_diffusion(self, z_src, z_ftr, mask, src_out, ftr_out, spk,
-                          n_timesteps, mode):
+                          n_timesteps, mode, require_traj=False):
         h = 1.0 / n_timesteps
         xt_src = z_src * mask
         xt_ftr = z_ftr * mask
+
+        if require_traj:
+            src_traj = [xt_src]
+            ftr_traj = [xt_ftr]
+
         for i in range(n_timesteps):
             t = 1.0 - i * h
             time = t * torch.ones(z_src.shape[0], dtype=z_src.dtype, device=z_src.device)
@@ -183,10 +188,10 @@ class Diffusion(BaseModule):
 
             estimated_score = (self.estimator_src(xt_src, mask, src_out, spk, time) +
                                self.estimator_ftr(xt_ftr, mask, ftr_out, spk, time)) \
-                              * (1.0 + kappa) * (beta_t * h)     
+                              * (1.0 + kappa) * (beta_t * h)
             dxt_src -= estimated_score
             dxt_ftr -= estimated_score
-            
+
             sigma_n = torch.randn_like(z_src, device=z_src.device) * sigma
             dxt_src += sigma_n
             dxt_ftr += sigma_n
@@ -194,15 +199,24 @@ class Diffusion(BaseModule):
             xt_src = (xt_src - dxt_src) * mask
             xt_ftr = (xt_ftr - dxt_ftr) * mask
 
-        return xt_src, xt_ftr
+            if require_traj:
+                src_traj.append(xt_src)
+                ftr_traj.append(xt_ftr)
+
+        if require_traj:
+            print('require_traj, return 4 elems')
+            src_traj = torch.stack(src_traj, dim=1)
+            ftr_traj = torch.stack(ftr_traj, dim=1)
+
+        return (xt_src, xt_ftr) if not require_traj else (xt_src, xt_ftr, src_traj, ftr_traj)
 
     @torch.no_grad()
-    def forward(self, z_src, z_ftr, mask, src_out, ftr_out, spk, n_timesteps, mode):
+    def forward(self, z_src, z_ftr, mask, src_out, ftr_out, spk, n_timesteps, mode, require_traj=False):
         if mode not in ['pf', 'em', 'ml']:
             print('Inference mode must be one of [pf, em, ml]!')
             return z_src, z_ftr
 
-        return self.reverse_diffusion(z_src, z_ftr, mask, src_out, ftr_out, spk, n_timesteps, mode)
+        return self.reverse_diffusion(z_src, z_ftr, mask, src_out, ftr_out, spk, n_timesteps, mode, require_traj=require_traj)
 
     def loss_t(self, x0, mask, src_out, ftr_out, spk, t):
         xt_src, xt_ftr, z = self.forward_diffusion(x0, mask, src_out, ftr_out, t)

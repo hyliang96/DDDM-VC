@@ -1,3 +1,8 @@
+#  conda install conda-forge::libsndfile  # use `LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH` before `python xxx.py`
+# or
+# sudo apt-get update; sudo apt-get install libsndfile1 libsndfile1-dev
+
+# virtualenv install:
 #  python==3.10.4
 
 pip==24.2
