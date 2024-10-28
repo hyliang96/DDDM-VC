@@ -1,5 +1,5 @@
 LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH \
-CUDA_VISIBLE_DEVICES=4 \
+CUDA_VISIBLE_DEVICES=7 \
 python3 inference.py \
     --src_path './sample/cn_woman.wav' \
     --trg_path './sample/cn_man.wav' \
